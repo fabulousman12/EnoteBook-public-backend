@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 //mongodb://localhost:27017
-//mongodb+srv://ayan:LYF9VV0fDgZOAMhr@inotebookbase.2dpxe3d.mongodb.net/
+// for locally 
 const connectToMongo = async () => {
   try {
     await mongoose.connect('mongodb://localhost:27017/inotebook', {
