@@ -6,9 +6,7 @@ const storage = multer.memoryStorage();
 // Set up multer middleware
 const upload = multer({
   storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // Limit file size to 5MB
-  },
+ 
   fileFilter: function (req, file, cb) {
  
     // Allow only images and PDFs
@@ -24,7 +22,7 @@ const upload = multer({
       cb(new Error('Please upload an image file'), false);
     }
   },
-}).single('image');
+}).array('image');
 
 // Middleware to handle multer errors
 const uploadMiddleware = (req, res, next) => {
