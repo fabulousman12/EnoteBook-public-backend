@@ -8,37 +8,34 @@ const ImageSchema = new Schema({
         required: true
     },
     name:{
-
         type:String,
         required:true
-
-    }, username:{
-
-        type:String,
-        required:true
-
     },
-    image: {
-        data: Buffer,
-        contentType: String,
- 
+    username: {
+        type: String,
+        required: true
     },
     category: {
         type: String,
         required: true
     },
-    fileType: {
+    comment: {
         type: String,
-
+        required: true
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    comment:{
-        type:String,
-        required:true
-    }
+    images: [{
+       
+     
+        data: Buffer,
+        contentType: String,
+        fileType: String,
+       
+        createdAt: {
+            type: Date,
+            default: Date.now
+        },
+      
+    }]
 });
 
 module.exports = mongoose.model('Image', ImageSchema);

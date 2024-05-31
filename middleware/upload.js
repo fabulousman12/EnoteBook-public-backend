@@ -3,38 +3,29 @@ const multer = require('multer');
 // Define storage for uploaded images
 const storage = multer.memoryStorage();
 
-// Set up multer middleware
+// Set up multer middleware for handling multiple file uploads
 const upload = multer({
   storage: storage,
- 
   fileFilter: function (req, file, cb) {
- 
-    // Allow only images and PDFs
+    // Allow only images
     if (
       file.mimetype === "image/png" ||
       file.mimetype === "image/jpg" ||
-      file.mimetype === "image/jpeg" ||
-      file.mimetype === "application/pdf"
+      file.mimetype === "image/jpeg"
     ) {
       cb(null, true);
     } else {
-      console.log('File rejected:', file.mimetype); // Log the rejected file type
-      cb(new Error('Please upload an image file'), false);
+      cb(new Error('Please upload only images'));
     }
   },
-}).array('image');
+}).array('images'); // Ensure 'images' is the field name for uploading multiple files
 
 // Middleware to handle multer errors
 const uploadMiddleware = (req, res, next) => {
   upload(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      // A Multer error occurred when uploading.
-      return res.status(400).json({ errors: [{ msg: err.message }] });
-    } else if (err) {
-      // An unknown error occurred when uploading.
-      return res.status(400).json({ errors: [{ msg: err.message }] });
+    if (err) {
+      return res.status(400).json({ error: err.message });
     }
-    // Everything went fine.
     next();
   });
 };

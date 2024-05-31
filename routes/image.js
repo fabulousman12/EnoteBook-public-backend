@@ -8,9 +8,10 @@ const User = require('../models/Users');
 
 // Route to upload an image (POST /api/upload)
 router.post('/upload', [
-    fetchuser, 
+    fetchuser,
     uploadMiddleware,
-    body('category', 'Category is required').notEmpty()
+    body('category', 'Category is required').notEmpty(),
+    body('comment', 'Comment is required').notEmpty()
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -18,40 +19,42 @@ router.post('/upload', [
     }
 
     try {
-        // Check if file was provided in the request
-        if (!req.file) {
-            return res.status(400).json({ errors: [{ msg: 'Please provide an image file' }] });
-        }
+        const { name, category, comment } = req.body;
+        const images = req.files;
         const userId = req.user.id;
+        const user = await User.findById(userId).select("-password");
 
-        // Fetch the authenticated user's details
-        const user = await User.findById(userId).select('-password');
-        if (!user) {
-            return res.status(404).json({ errors: [{ msg: 'User not found' }] });
+        if (!images || images.length === 0) {
+            return res.status(400).json({ error: 'No images uploaded' });
         }
 
-        // Create a new image document
+        const imageDocs = images.map(image => ({
+            name: name, // Use the same name for all images if needed
+            username: user.name,
+            data: image.buffer,
+            contentType: image.mimetype,
+            fileType: image.mimetype,
+            category: category,
+            comment: comment
+        }));
+
         const newImage = new Image({
             user: userId,
-            username:user.name,
-            name: req.body.name,
-            comment:req.body.comment,
-            image: {
-                data: req.file.buffer,
-                contentType: req.file.mimetype
-            },
-            category: req.body.category
+            name: name, // Set the name of the image collection
+            username: user.name, // Assuming username is stored in the User model
+            category: category,
+            comment: comment,
+            images: imageDocs
         });
 
-        // Save the image to the database
-        await newImage.save();
-
-        res.json({ message: 'Image uploaded successfully', image: newImage });
+        const savedImage = await newImage.save();
+        res.json(savedImage);
     } catch (error) {
-        console.error('Error uploading image:', error);
-        res.status(500).send('Internal Server Error');
+        console.error('Error uploading images:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 // Route to delete an image (DELETE /api/delete/:id)
 router.delete('/delete/:id', fetchuser, async (req, res) => {
